@@ -74,23 +74,42 @@ class OwnerController {
 	}
 
 	@GetMapping("/owners/find")
-    @LogExecutionTime
+	@LogExecutionTime
 	public String initFindForm(Map<String, Object> model) {
 		model.put("owner", new Owner());
 		return "owners/findOwners";
 	}
 
+    private Collection<Owner> findByLastName(Owner owner) {
+        return this.owners.findByLastName(owner.getLastName());
+    }
+
+	private Collection<Owner> findByFirstName(Owner owner) {
+	    return this.owners.findByFirstName(owner.getFirstName());
+    }
+
+    private Collection<Owner> findByFullName(Owner owner) {
+        return this.owners.findByFullName(owner.getLastName(), owner.getFirstName());
+    }
+
+    private Collection<Owner> findByName(Owner owner) {
+	    String lastName = owner.getLastName();
+	    String firstName = owner.getFirstName();
+	    if (!lastName.isEmpty() && !firstName.isEmpty()) return findByFullName(owner);
+        else if (lastName.isEmpty()) return findByFirstName(owner);
+        else return findByLastName(owner);
+    }
+
 	@GetMapping("/owners")
-    @LogExecutionTime
+	@LogExecutionTime
 	public String processFindForm(Owner owner, BindingResult result, Map<String, Object> model) {
 
-		// allow parameterless GET request for /owners to return all records
-		if (owner.getLastName() == null) {
-			owner.setLastName(""); // empty string signifies broadest possible search
-		}
+		// allow parameter-less GET request for /owners to return all records
+		if (owner.getLastName() == null) owner.setLastName(""); // empty string signifies broadest possible search
+		if (owner.getFirstName() == null) owner.setFirstName("");
 
 		// find owners by last name
-		Collection<Owner> results = this.owners.findByLastName(owner.getLastName());
+		Collection<Owner> results = findByName(owner);
 		if (results.isEmpty()) {
 			// no owners found
 			result.rejectValue("lastName", "notFound", "not found");
@@ -109,7 +128,7 @@ class OwnerController {
 	}
 
 	@GetMapping("/owners/{ownerId}/edit")
-    @LogExecutionTime
+	@LogExecutionTime
 	public String initUpdateOwnerForm(@PathVariable("ownerId") int ownerId, Model model) {
 		Owner owner = this.owners.findById(ownerId);
 		model.addAttribute(owner);
@@ -117,7 +136,7 @@ class OwnerController {
 	}
 
 	@PostMapping("/owners/{ownerId}/edit")
-    @LogExecutionTime
+	@LogExecutionTime
 	public String processUpdateOwnerForm(@Valid Owner owner, BindingResult result,
 			@PathVariable("ownerId") int ownerId) {
 		if (result.hasErrors()) {

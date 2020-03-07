@@ -12,18 +12,19 @@ import org.springframework.util.StopWatch;
 @Aspect
 public class LogAspect {
 
-    private Logger logger = LoggerFactory.getLogger(LogAspect.class);
+	private Logger logger = LoggerFactory.getLogger(LogAspect.class);
 
-    @Around("@annotation(LogExecutionTime)")
-    public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
+	@Around("@annotation(LogExecutionTime)")
+	public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
 
-        StopWatch stopWatch = new StopWatch();
-        stopWatch.start();
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
 
-        Object proceed = joinPoint.proceed();
-        stopWatch.stop();
-        logger.info(stopWatch.prettyPrint());
+		Object proceed = joinPoint.proceed();
+		stopWatch.stop();
+		logger.info(stopWatch.prettyPrint());
 
-        return proceed;
-    }
+		return proceed;
+	}
+
 }
